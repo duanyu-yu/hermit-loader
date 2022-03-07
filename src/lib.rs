@@ -21,6 +21,7 @@ pub mod macros;
 pub mod arch;
 pub mod console;
 pub mod kernel;
+pub mod dtb;
 pub mod mm;
 mod runtime_glue;
 

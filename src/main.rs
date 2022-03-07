@@ -35,6 +35,10 @@ pub unsafe extern "C" fn loader_main() -> ! {
 	let (elf_location, kernel_location, entry_point) =
 		kernel::load_kernel(&elf, app.as_ptr() as u64, mem_size);
 
+	// read devicetree
+	let dtb = dtb::parse().expect("Unable to parse DTB file");
+	dtb::read(&dtb);
+
 	// boot kernel
 	arch::boot_kernel(elf_location, kernel_location, mem_size, entry_point)
 }

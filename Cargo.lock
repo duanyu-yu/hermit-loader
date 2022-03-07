@@ -60,6 +60,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dtb"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "be6c6e1672a044abd9652045ba11beb1c7fbec7e5262dcba54795e82aa577971"
+
+[[package]]
 name = "dtoa"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -328,6 +334,7 @@ version = "0.2.6"
 dependencies = [
  "aarch64",
  "bitflags",
+ "dtb",
  "goblin",
  "multiboot",
  "target_build_utils",
