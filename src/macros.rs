@@ -35,3 +35,16 @@ macro_rules! println {
 macro_rules! loaderlog {
 	($($arg:tt)+) => (println!("[LOADER] {}", format_args!($($arg)+)));
 }
+
+/// A simple macro that embeds the bytes of an external file into the executable and guarantees that they are aligned.
+#[macro_export]
+macro_rules! include_bytes_aligned {
+    ($align_to:expr, $path:expr) => {{
+        #[repr(C, align($align_to))]
+        struct __Aligned<T: ?Sized>(T);
+
+        static __DATA: &'static __Aligned<[u8]> = &__Aligned(*include_bytes!($path));
+
+        &__DATA.0
+    }};
+}

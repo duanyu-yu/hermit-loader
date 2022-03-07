@@ -1,14 +1,15 @@
 use dtb::{Reader, StructItem};
-use core::{include_bytes};
 
 pub fn parse() -> Result<Reader<'static>, &'static str> {
-    let blob = include_bytes!("dtb/test.dtb").as_slice();
+    let blob: &[u8] = include_bytes_aligned!(64, "dtb/test.dtb");
     let reader = Reader::read(blob).unwrap();
 
     Ok(reader)
 }
 
 pub fn read(reader: &Reader<'_>) {
+    loaderlog!("Device Tree:");
+
     for entry in reader.reserved_mem_entries(){
         loaderlog!("reserved: {:#X?}, {:#X?}", entry.address, entry.size);
     }
