@@ -1,7 +1,7 @@
 use dtb::{Reader, StructItem};
 
 pub fn parse() -> Result<Reader<'static>, &'static str> {
-    let blob: &[u8] = include_bytes_aligned!(64, "dtb/test.dtb");
+    let blob: &[u8] = include_bytes_aligned!(64, "dtb/basic.dtb");
     let reader = Reader::read(blob).unwrap();
 
     Ok(reader)
