@@ -1,25 +1,37 @@
 /dts-v1/;
 
 / {
-    cpus {
-        #address-cells = <1>;
-        #size-cells = <0>;
-        cpu@0 {
-            compatible = "arm,cortex-a9";
-            reg = <0x0>; 
-        };
-        cpu@1 {
-            compatible = "arm,cortex-a9";
-            reg = <0x1>; 
-        };
-    };
 
-    memory {
-        device_type = "memory";
-    };
+	cpus {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
 
-    virtio_net@c0000000 {
-        compatible = "virtio,mmio";
-        reg = <0xc0000000 0x200>;
-    };
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0x00>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0x01>;
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x7200000 0xde0000>;
+	};
+
+	reserved-memory {
+		#address-cells = <0x01>;
+		#size-cells = <0x01>;
+		ranges = <0x00 0x1000 0xc0000000>;
+
+		net@e00 {
+			compatible = "virtio,mmio";
+			reg = <0xe00 0x200>;
+		};
+	};
 };
