@@ -12,8 +12,7 @@ pub fn read(reader: &Reader<'_>) {
 
     for entry in reader.reserved_mem_entries(){
         loaderlog!("reserved: {:#X?}, {:#X?}", entry.address, entry.size);
-    }
-
+bb
     let mut indent = 0;
     for entry in reader.struct_items() {
         match entry {
