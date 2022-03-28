@@ -217,9 +217,13 @@ pub unsafe fn boot_kernel(
 		KERNEL_STACK_SIZE.try_into().unwrap(),
 	);
 
+	// Supply address of the device tree blob
+	BOOT_INFO.dtb = "../../dtb/basic.dtb".as_ptr() as u64;
+
 	loaderlog!("BootInfo located at {:#x}", &BOOT_INFO as *const _ as u64);
 	//loaderlog!("BootInfo {:?}", BOOT_INFO);
 	loaderlog!("Use stack address {:#x}", BOOT_INFO.current_stack_address);
+	loaderlog!("Device Tree path {:#x}", BOOT_INFO.dtb);
 
 	// Jump to the kernel entry point and provide the Multiboot information to it.
 	loaderlog!(

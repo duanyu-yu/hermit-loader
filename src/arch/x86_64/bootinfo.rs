@@ -31,6 +31,7 @@ pub struct BootInfo {
 	pub hcgateway: [u8; 4],
 	pub hcmask: [u8; 4],
 	pub tls_align: u64,
+	pub dtb: u64,
 }
 
 impl BootInfo {
@@ -63,6 +64,7 @@ impl BootInfo {
 			hcgateway: [255, 255, 255, 255],
 			hcmask: [255, 255, 255, 0],
 			tls_align: 0,
+			dtb: 0,
 		}
 	}
 }
@@ -96,6 +98,7 @@ impl fmt::Debug for BootInfo {
 		writeln!(f, "current_boot_id {}", self.current_boot_id)?;
 		writeln!(f, "uartport {:#x}", self.uartport)?;
 		writeln!(f, "single_kernel {}", self.single_kernel)?;
-		writeln!(f, "uhyve {}", self.uhyve)
+		writeln!(f, "uhyve {}", self.uhyve);
+		writeln!(f, "dtb {:#x}", self.dtb)
 	}
 }
