@@ -6,10 +6,11 @@ pub mod serial;
 pub use self::bootinfo::*;
 use crate::arch::x86_64::paging::{BasePageSize, LargePageSize, PageSize, PageTableEntryFlags};
 use crate::arch::x86_64::serial::SerialPort;
-use core::ptr::{copy, write_bytes};
+use core::ptr::{copy, write_bytes, addr_of};
 use core::{mem, slice};
 use goblin::elf;
 use multiboot::information::{MemoryManagement, Multiboot, PAddr};
+use crate::dtb;
 
 extern "C" {
 	static mb_info: usize;
@@ -218,12 +219,13 @@ pub unsafe fn boot_kernel(
 	);
 
 	// Supply address of the device tree blob
-	BOOT_INFO.dtb = "../../dtb/basic.dtb".as_ptr() as u64;
+	let dtb = include_bytes_aligned!(64, "../../dtb/basic.dtb");
+	BOOT_INFO.dtb = addr_of!(dtb) as u64;
 
 	loaderlog!("BootInfo located at {:#x}", &BOOT_INFO as *const _ as u64);
 	//loaderlog!("BootInfo {:?}", BOOT_INFO);
 	loaderlog!("Use stack address {:#x}", BOOT_INFO.current_stack_address);
-	loaderlog!("Device Tree path {:#x}", BOOT_INFO.dtb);
+	loaderlog!("Device Tree located at {:#x}", BOOT_INFO.dtb);
 
 	// Jump to the kernel entry point and provide the Multiboot information to it.
 	loaderlog!(
