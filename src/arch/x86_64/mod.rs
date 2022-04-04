@@ -227,8 +227,6 @@ pub unsafe fn boot_kernel(
 	loaderlog!("Use stack address {:#x}", BOOT_INFO.current_stack_address);
 	loaderlog!("Device Tree located at {:#x}", BOOT_INFO.dtb);
 
-	// dtb::read_from_address(BOOT_INFO.dtb as usize);
-
 	// Jump to the kernel entry point and provide the Multiboot information to it.
 	loaderlog!(
 		"Jumping to HermitCore Application Entry Point at {:#x}",
