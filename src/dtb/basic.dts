@@ -23,7 +23,8 @@
 
 	memory {
 		device_type = "memory";
-		reg = <0x7200000 0xde0000>;
+		reg = <0x1c00000 0x63E0000>;
+		// reg = <0x7200000 0xde0000>;
 	};
 
 	reserved-memory {
