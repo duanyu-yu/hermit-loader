@@ -1,4 +1,13 @@
+extern crate devicetree;
+
 use dtb::{Reader, StructItem};
+use devicetree::DeviceTree;
+use multiboot::information::{Multiboot};
+use crate::arch::x86_64::MEM;
+
+extern "C" {
+    static mb_info: usize;
+}
 
 pub fn parse() -> Result<Reader<'static>, &'static str> {
     let blob: &[u8] = include_bytes_aligned!(64, "dtb/basic.dtb");
@@ -54,5 +63,27 @@ pub fn read_from_address(addr: usize) {
                 loaderlog!("{:indent$}{}: {:?}", "", name, value, indent = indent)
             }
         }
+    }
+}
+
+pub fn from_mb() {
+    assert!(mb_info > 0, "Could not find Multiboot information");
+	loaderlog!("Found Multiboot information at {:#x}", mb_info);
+
+    // Load the Multiboot information
+    let multiboot = unsafe { Multiboot::from_ptr(mb_info as u64, &mut MEM).unwrap() };
+    let memory_regions = multiboot
+        .memory_regions()
+        .expect("Could not find a memory map in the Multiboot information");
+
+
+    
+    for m in memory_regions {
+        
+
+        reg.push(m.base_address() as u32);
+        reg.push(m.length() as u32);
+
+        DeviceTree::edit_property(String::from("memory"), String::from("reg"), reg);
     }
 }
