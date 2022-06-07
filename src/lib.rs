@@ -23,6 +23,7 @@ pub mod console;
 pub mod kernel;
 pub mod dtb;
 pub mod mm;
+pub mod devicetree;
 mod runtime_glue;
 
 use core::ptr;

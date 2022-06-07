@@ -28,8 +28,8 @@ const SERIAL_PORT_BAUDRATE: u32 = 115200;
 static COM1: SerialPort = SerialPort::new(SERIAL_PORT_ADDRESS);
 pub static mut BOOT_INFO: BootInfo = BootInfo::new();
 
-struct Mem;
-static mut MEM: Mem = Mem;
+pub struct Mem;
+pub static mut MEM: Mem = Mem;
 
 impl MemoryManagement for Mem {
 	unsafe fn paddr_to_slice<'a>(&self, p: PAddr, sz: usize) -> Option<&'static [u8]> {
@@ -221,6 +221,8 @@ pub unsafe fn boot_kernel(
 	// Supply address of the device tree blob
 	let dtb: &[u8] = include_bytes_aligned!(64, "../../dtb/basic.dtb");
 	BOOT_INFO.dtb = dtb.as_ptr() as u64;
+
+	let dt_from_mb = dtb::from_mb().unwrap();
 
 	loaderlog!("BootInfo located at {:#x}", &BOOT_INFO as *const _ as u64);
 	//loaderlog!("BootInfo {:?}", BOOT_INFO);

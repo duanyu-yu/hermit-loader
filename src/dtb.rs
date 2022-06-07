@@ -1,9 +1,9 @@
-extern crate devicetree;
-
 use dtb::{Reader, StructItem};
-use devicetree::DeviceTree;
 use multiboot::information::{Multiboot};
+use alloc::vec::Vec;
+use alloc::string::String;
 use crate::arch::x86_64::MEM;
+use crate::devicetree::{DeviceTree, DeviceTreeProperty};
 
 extern "C" {
     static mb_info: usize;
@@ -66,24 +66,26 @@ pub fn read_from_address(addr: usize) {
     }
 }
 
-pub fn from_mb() {
+pub unsafe fn from_mb() -> Result<DeviceTree, &'static str> {
     assert!(mb_info > 0, "Could not find Multiboot information");
 	loaderlog!("Found Multiboot information at {:#x}", mb_info);
 
     // Load the Multiboot information
-    let multiboot = unsafe { Multiboot::from_ptr(mb_info as u64, &mut MEM).unwrap() };
+    let multiboot = Multiboot::from_ptr(mb_info as u64, &mut MEM).unwrap();
     let memory_regions = multiboot
         .memory_regions()
         .expect("Could not find a memory map in the Multiboot information");
 
-
+    let mut reg: Vec<u32> = Vec::new();
     
     for m in memory_regions {
-        
-
         reg.push(m.base_address() as u32);
-        reg.push(m.length() as u32);
-
-        DeviceTree::edit_property(String::from("memory"), String::from("reg"), reg);
+        reg.push(m.length() as u32); 
     }
+
+    let mut dt = DeviceTree::new();
+
+    dt.edit_property(&String::from("memory"), &String::from("reg"), DeviceTreeProperty::MultipleUnsignedInt32(reg));
+
+    Ok(dt)
 }
