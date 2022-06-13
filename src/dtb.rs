@@ -3,7 +3,7 @@ use multiboot::information::{Multiboot};
 use alloc::vec::Vec;
 use alloc::string::String;
 use crate::arch::x86_64::MEM;
-use crate::devicetree::{DeviceTree, DeviceTreeProperty};
+use crate::devicetree::{DeviceTree, DeviceTreeProperty, DeviceTreeBlob};
 
 extern "C" {
     static mb_info: usize;
@@ -66,7 +66,7 @@ pub fn read_from_address(addr: usize) {
     }
 }
 
-pub unsafe fn from_mb() -> Result<DeviceTree, &'static str> {
+pub unsafe fn from_mb() -> Result<Vec<u8>, &'static str> {
     assert!(mb_info > 0, "Could not find Multiboot information");
 	loaderlog!("Found Multiboot information at {:#x}", mb_info);
 
@@ -87,5 +87,13 @@ pub unsafe fn from_mb() -> Result<DeviceTree, &'static str> {
 
     dt.edit_property(&String::from("memory"), &String::from("reg"), DeviceTreeProperty::MultipleUnsignedInt32(reg));
 
-    Ok(dt)
+    let blob_as_vec = dt.to_blob().unwrap();
+    let blob = DeviceTreeBlob::from_slice(blob_as_vec.as_slice()).unwrap();
+
+    if blob.compatibility_check().is_ok() {
+        return Ok(dt.to_blob().unwrap());
+    }
+    else {
+        return Err("not compatible");
+    }
 }

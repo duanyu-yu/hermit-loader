@@ -219,15 +219,15 @@ pub unsafe fn boot_kernel(
 	);
 
 	// Supply address of the device tree blob
-	let dtb: &[u8] = include_bytes_aligned!(64, "../../dtb/basic.dtb");
-	BOOT_INFO.dtb = dtb.as_ptr() as u64;
+	// let dtb: &[u8] = include_bytes_aligned!(64, "../../dtb/basic.dtb");
+	// BOOT_INFO.dtb = dtb.as_ptr() as u64;
 
-	let dt_from_mb = dtb::from_mb().unwrap();
+	BOOT_INFO.dtb = dtb::from_mb().unwrap().as_slice().as_ptr() as u64;
 
 	loaderlog!("BootInfo located at {:#x}", &BOOT_INFO as *const _ as u64);
 	//loaderlog!("BootInfo {:?}", BOOT_INFO);
 	loaderlog!("Use stack address {:#x}", BOOT_INFO.current_stack_address);
-	loaderlog!("Device Tree located at {:#x}", BOOT_INFO.dtb);
+	loaderlog!("Device Tree From Multiboot located at {:#x}", BOOT_INFO.dtb);
 
 	// Jump to the kernel entry point and provide the Multiboot information to it.
 	loaderlog!(

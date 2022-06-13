@@ -211,7 +211,7 @@ impl DeviceTreeBlob<'_>
             return Err(DeviceTreeError::TokenUnaligned)
         }
 
-        let token = BigEndian::read_u32(&self.bytes[*offset..*offset+4]); // TODO: add offset!!!
+        let token = BigEndian::read_u32(&self.bytes[*offset..*offset+4]);
         if token == 0 {
             return Err(DeviceTreeError::ReachedUnexpectedEnd) /* stop parsing when out of bounds */
         }
@@ -250,13 +250,13 @@ impl DeviceTreeBlob<'_>
                 and then a 32-bit offset into the string table for the property's name.
                 then follows length number of bytes of data belonging to the property */
                 align_to_next_u32!(*offset);
-                let length = BigEndian::read_u32(&self.bytes); // TODO: add offset!!!
+                let length = BigEndian::read_u32(&self.bytes[*offset..*offset+4]);
                 if length == 0 {
                     return Err(DeviceTreeError::ReachedUnexpectedEnd) /* stop parsing when out of bounds */
                 }
 
                 align_to_next_u32!(*offset);
-                let string_offset = BigEndian::read_u32(&self.bytes); // TODO: add offset!!!
+                let string_offset = BigEndian::read_u32(&self.bytes[*offset..*offset+4]);
                 if string_offset == 0 {
                     return Err(DeviceTreeError::ReachedUnexpectedEnd) /* stop parsing when out of bounds */
                 }
@@ -273,7 +273,7 @@ impl DeviceTreeBlob<'_>
                         let mut array = Vec::<u8>::new();
                         for _ in 0..length
                         {
-                            let byte = BigEndian::read_u32(&self.bytes); // TODO: add offset!!!
+                            let byte = BigEndian::read_u32(&self.bytes[*offset..*offset+4]);
                             if byte != 0
                             {
                                 array.push(byte.try_into().unwrap());
@@ -354,7 +354,7 @@ impl DeviceTreeBlob<'_>
             //     },
             //     None => break 
             // }
-            let c = BigEndian::read_u16(&self.bytes).to_be_bytes()[0]; // TODO: add offset!!!
+            let c = BigEndian::read_u16(&self.bytes[offset..offset+4]).to_be_bytes()[0];
             if c != 0 {
                 match c {
                     /* stop at null or colon bytes (see above comment) */
@@ -819,10 +819,13 @@ impl DeviceTree
         /* write out metadata */
         // bytes.add_u32(DTB_MAGIC);
         for b in DTB_MAGIC.to_be_bytes() { bytes_as_vec.push(b); }
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
         self.reserve_reference(&mut bytes_as_vec, &mut references, DeviceTreeReference::TotalSize);
         self.reserve_reference(&mut bytes_as_vec, &mut references, DeviceTreeReference::OffsetDTStruct);
         self.reserve_reference(&mut bytes_as_vec, &mut references, DeviceTreeReference::OffsetDTStrings);
         self.reserve_reference(&mut bytes_as_vec, &mut references, DeviceTreeReference::OffsetMemoryReservation);
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
+
         // bytes.add_u32(DTB_VERSION); /* specification version */
         for b in DTB_VERSION.to_be_bytes() { bytes_as_vec.push(b); }
         // bytes.add_u32(LAST_SUPPORTED_VERSION); /* minimuum supported version */
@@ -836,10 +839,14 @@ impl DeviceTree
         // let pos = bytes.offset32();
         let pos = bytes_as_vec.len() as u32 + 4 - (bytes_as_vec.len() % 4) as u32;
         self.resolve_reference(&mut bytes_as_vec, &mut references, DeviceTreeReference::OffsetMemoryReservation, pos)?;
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
+
         // bytes.add_u64(0); /* reserved mem address. 0 = end list*/
         for b in 0_u32.to_be_bytes() { bytes_as_vec.push(b); }
         // bytes.add_u64(0); /* reserved mem size. 0 = end list */
         for b in 0_u32.to_be_bytes() { bytes_as_vec.push(b); }
+
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
 
         /* keep track of the nodes we've already created in the DTB */
         let mut prev_nodes = Vec::<&str>::new();
@@ -882,6 +889,8 @@ impl DeviceTree
         let dtstruct_start = bytes_as_vec.len() as u32 + 4 - (bytes_as_vec.len() % 4) as u32;
 
         self.resolve_reference(&mut bytes_as_vec, &mut references, DeviceTreeReference::OffsetDTStruct, dtstruct_start)?;
+
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
 
         for (path, properties) in self.nodes.iter()
         {
@@ -952,6 +961,8 @@ impl DeviceTree
                 // bytes.pad_to_u32();
             }
         }
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
+
 
         /* close all outstanding nodes and end the node structure */
         for _ in prev_nodes
@@ -962,11 +973,17 @@ impl DeviceTree
         // bytes.add_u32(FDT_END);
         for b in FDT_END.to_be_bytes() { bytes_as_vec.push(b); }
 
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
+
+
         // let dtstruct_end = bytes.offset32();
         let dtstruct_end = bytes_as_vec.len() as u32 + 4 - (bytes_as_vec.len() % 4) as u32;
 
         self.resolve_reference(&mut bytes_as_vec, &mut references,
             DeviceTreeReference::SizeDTStruct, dtstruct_end - dtstruct_start)?;
+
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
+
         
         /* resolve strings here */
         let dtstrings_start = dtstruct_end;
@@ -975,16 +992,24 @@ impl DeviceTree
 
         self.resolve_name_strings(&mut bytes_as_vec, &mut references)?;
 
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
+
+
         // let dtstrings_end = bytes.offset32();
         let dtstrings_end = bytes_as_vec.len() as u32 + 4 - (bytes_as_vec.len() % 4) as u32;
 
         self.resolve_reference(&mut bytes_as_vec, &mut references,
             DeviceTreeReference::SizeDTStrings, dtstrings_end - dtstrings_start)?;
 
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
+
         /* write in the final size - we're all done */
+        // TODO: Error! Rewrited the magic number.
         let totalsize = bytes_as_vec.len() as u32  + 4 - (bytes_as_vec.len() % 4) as u32;
         self.resolve_reference(&mut bytes_as_vec, &mut references,
             DeviceTreeReference::TotalSize, totalsize)?;
+
+        loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
 
         Ok(bytes_as_vec)
     }
