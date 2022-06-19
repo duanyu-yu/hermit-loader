@@ -1058,10 +1058,12 @@ impl DeviceTree
                     for b in value.to_be_bytes() { 
                         let mut i = 0;
 
-                        bytes_as_vec[*offset-1+i] = b; 
+                        bytes_as_vec[*offset+i] = b; 
 
                         i += 1;
                     }
+
+                    loaderlog!("current offset: {}", *offset);
 
                     to_remove.push(*offset);
                 }
