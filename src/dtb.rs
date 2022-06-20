@@ -76,16 +76,15 @@ pub unsafe fn from_mb() -> Result<Vec<u8>, &'static str> {
         .memory_regions()
         .expect("Could not find a memory map in the Multiboot information");
 
-    let mut reg: Vec<u32> = Vec::new();
+    let mut reg: Vec<(u32, u32)> = Vec::new();
     
     for m in memory_regions {
-        reg.push(m.base_address() as u32);
-        reg.push(m.length() as u32); 
+        reg.push((m.base_address() as u32, m.length() as u32)); 
     }
 
     let mut dt = DeviceTree::new();
 
-    dt.edit_property(&String::from("memory"), &String::from("reg"), DeviceTreeProperty::MultipleUnsignedInt32(reg));
+    dt.edit_property(&String::from("memory"), &String::from("reg"), DeviceTreeProperty::MultipleUnsignedInt32_32(reg));
 
     let blob_as_vec = dt.to_blob().unwrap();
     let blob = DeviceTreeBlob::from_slice(blob_as_vec.as_slice()).unwrap();

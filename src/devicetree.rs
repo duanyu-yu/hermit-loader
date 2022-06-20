@@ -1004,7 +1004,6 @@ impl DeviceTree
         loaderlog!("magic: {:#x}", BigEndian::read_u32(&bytes_as_vec.as_slice()[0..4]));
 
         /* write in the final size - we're all done */
-        // TODO: Error! Rewrited the magic number.
         let totalsize = bytes_as_vec.len() as u32  + 4 - (bytes_as_vec.len() % 4) as u32;
         self.resolve_reference(&mut bytes_as_vec, &mut references,
             DeviceTreeReference::TotalSize, totalsize)?;
